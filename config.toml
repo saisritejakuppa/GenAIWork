@@ -1,15 +1,37 @@
 [operation]
-operation = 'train' # unet, gan, vae, diffusion - training + testing + inference
+wandb_flag = 1
+wandb_model_freq = 100
+operation = 'train'    # unet, gan, vae, diffusion - training + testing + inference
+device = 'cuda'
 
 [dataset]
 
 
 [model]
-
+model = 'gan'
 
 [unet]
 
 [gan]
+name = 'simple_gan'
+lr = 3e-4
+z_dim = 64
+image_dim = 784
+batch_size = 32
+num_epochs = 50
+
+[gan.criterion]
+name = 'bceloss'
+
+[gan.gen]
+[gan.gen.opt]
+name = 'adam'
+lr = 3e-4
+[gan.disc]
+[gan.disc.opt]
+name = 'adam'
+lr = 3e-4
+
 
 [diffusion]
 
