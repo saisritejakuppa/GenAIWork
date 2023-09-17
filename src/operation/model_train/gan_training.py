@@ -74,7 +74,7 @@ class GanTraining:
         self.trainconfig.wandb_status = self.config["operation"]["wandb_flag"]
         freq = self.config["operation"]["wandb_model_freq"]
         if self.trainconfig.wandb_status:
-            wandb.init(project="gan", config=self.config)
+            wandb.init(project="gan_training", config=self.config)
             wandb.watch(self.trainconfig.disc, log_freq=freq, log="all")
             wandb.watch(self.trainconfig.gen, log_freq=freq, log="all")
 

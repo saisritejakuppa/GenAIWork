@@ -4,6 +4,7 @@ wandb_model_freq = 100
 operation = 'test'     # unet, gan, vae, diffusion - training + testing + inference
 device = 'cuda'
 
+
 [dataset]
 
 
@@ -17,7 +18,7 @@ name = 'simple_gan'
 lr = 3e-4
 z_dim = 64
 image_dim = 784
-batch_size = 32
+batch_size = 4
 num_epochs = 1
 
 [gan.criterion]
