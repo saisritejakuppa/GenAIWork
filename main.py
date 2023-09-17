@@ -12,7 +12,7 @@ def main(config):
 
     if config["operation"]["operation"] == "test":
         logger.info("Operation: Testing")
-        Test(config).test()
+        Test(config).test()    
 
     if config["operation"]["operation"] == "infer":
         logger.info("Operation: Inference")

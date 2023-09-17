@@ -1,7 +1,7 @@
 [operation]
 wandb_flag = 1
 wandb_model_freq = 100
-operation = 'train'    # unet, gan, vae, diffusion - training + testing + inference
+operation = 'test'     # unet, gan, vae, diffusion - training + testing + inference
 device = 'cuda'
 
 [dataset]
@@ -18,7 +18,7 @@ lr = 3e-4
 z_dim = 64
 image_dim = 784
 batch_size = 32
-num_epochs = 50
+num_epochs = 1
 
 [gan.criterion]
 name = 'bceloss'

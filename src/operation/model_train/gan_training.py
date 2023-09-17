@@ -8,6 +8,7 @@ import torch.nn as nn
 from tqdm import tqdm
 import wandb
 import torchvision
+import os
 
 
 class TrainConfig:
@@ -31,51 +32,55 @@ class GanTraining:
         model_info = self.config["gan"]
 
         if model_info["name"] == "simple_gan":
-            self.trainconfig = TrainConfig()
-            self.trainconfig.data = 0
-            self.trainconfig.device = self.config["operation"]["device"]
-            self.trainconfig.disc = Discriminator(self.config["gan"]["image_dim"])
-            self.trainconfig.gen = Generator(self.config["gan"]["z_dim"], self.config["gan"]["image_dim"])
+            trainconfig = self.config_simple_gan()
+            self.train_simple_gan(trainconfig)
 
-            # print(self.trainconfig.gen)
-            # print(self.trainconfig.disc)
+    def config_simple_gan(self):
+        self.trainconfig = TrainConfig()
+        self.trainconfig.data = 0
+        self.trainconfig.device = self.config["operation"]["device"]
+        self.trainconfig.disc = Discriminator(self.config["gan"]["image_dim"])
+        self.trainconfig.gen = Generator(self.config["gan"]["z_dim"], self.config["gan"]["image_dim"])
 
-            logger.debug("The Generator and Discriminator are built.")
+        # print(self.trainconfig.gen)
+        # print(self.trainconfig.disc)
 
-            tfms = DataLoadingOperations.get_tfs()
-            data = DataLoadingOperations.get_mnist(tfms)
-            self.trainconfig.dataloader = DataLoadingOperations.dataloading(data)
+        logger.debug("The Generator and Discriminator are built.")
 
-            logger.debug("The dataloader is loaded.")
+        tfms = DataLoadingOperations.get_tfs()
+        data = DataLoadingOperations.get_mnist(tfms)
+        self.trainconfig.dataloader = DataLoadingOperations.dataloading(data)
 
-            gan_params = self.config["gan"]["gen"]["opt"]
-            self.trainconfig.gen_opt = self.optimizer(gan_params, self.trainconfig.gen)
+        logger.debug("The dataloader is loaded.")
 
-            disc_params = self.config["gan"]["disc"]["opt"]
-            self.trainconfig.disc_opt = self.optimizer(disc_params, self.trainconfig.disc)
+        gan_params = self.config["gan"]["gen"]["opt"]
+        self.trainconfig.gen_opt = self.optimizer(gan_params, self.trainconfig.gen)
 
-            logger.debug("The optimizers are init.")
+        disc_params = self.config["gan"]["disc"]["opt"]
+        self.trainconfig.disc_opt = self.optimizer(disc_params, self.trainconfig.disc)
 
-            criterion_params = self.config["gan"]["criterion"]
-            self.trainconfig.criterion = self.criterion(criterion_params)
+        logger.debug("The optimizers are init.")
 
-            logger.debug("The criterion is set.")
+        criterion_params = self.config["gan"]["criterion"]
+        self.trainconfig.criterion = self.criterion(criterion_params)
 
-            self.trainconfig.device = self.config["operation"]["device"]
-            self.trainconfig.z_dim = self.config["gan"]["z_dim"]
-            self.trainconfig.batch_size = self.config["gan"]["batch_size"]
-            self.trainconfig.num_epochs = self.config["gan"]["num_epochs"]
+        logger.debug("The criterion is set.")
 
-            self.trainconfig.wandb_status = self.config["operation"]["wandb_flag"]
-            freq = self.config["operation"]["wandb_model_freq"]
-            if self.trainconfig.wandb_status:
-                wandb.init(project="gan", config=self.config)
-                wandb.watch(self.trainconfig.disc, log_freq=freq, log="all")
-                wandb.watch(self.trainconfig.gen, log_freq=freq, log="all")
+        self.trainconfig.device = self.config["operation"]["device"]
+        self.trainconfig.z_dim = self.config["gan"]["z_dim"]
+        self.trainconfig.batch_size = self.config["gan"]["batch_size"]
+        self.trainconfig.num_epochs = self.config["gan"]["num_epochs"]
 
-            self.simple_gan_train(self.trainconfig)
+        self.trainconfig.wandb_status = self.config["operation"]["wandb_flag"]
+        freq = self.config["operation"]["wandb_model_freq"]
+        if self.trainconfig.wandb_status:
+            wandb.init(project="gan", config=self.config)
+            wandb.watch(self.trainconfig.disc, log_freq=freq, log="all")
+            wandb.watch(self.trainconfig.gen, log_freq=freq, log="all")
 
-    def simple_gan_train(self, config):
+        return self.trainconfig
+
+    def train_simple_gan(self, config):
         logger.debug("training a simple gan")
 
         # make sure the below are there configured in the config dic
@@ -155,3 +160,16 @@ class GanTraining:
                         wandb.log({"img_grid_real": img_grid_real})
 
                     step += 1
+
+        # save the model
+        os.makedirs("./output", exist_ok=True)
+        wandb.unwatch(gen)
+        wandb.unwatch(disc)
+        op = {
+            "model_disc": disc.state_dict(),
+            "model_gen": gen.state_dict(),
+            "opt_disc": opt_disc.state_dict(),
+            "opt_gen": opt_gen.state_dict(),
+        }
+        torch.save(op, "output/op.pt")
+        logger.info("Saved the models of gen, disc.")
