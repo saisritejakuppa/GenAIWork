@@ -1,0 +1,16 @@
+[operation]
+operation = 'train' # unet, gan, vae, diffusion - training + testing + inference
+
+[dataset]
+
+
+[model]
+
+
+[unet]
+
+[gan]
+
+[diffusion]
+
+[vae]
